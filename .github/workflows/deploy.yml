@@ -1,0 +1,94 @@
+name: Deploy Laravel
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: mbstring, bcmath, intl, pdo_pgsql, zip
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Run tests
+        run: php artisan test
+
+  deploy:
+    name: Deploy to AWS
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy through SSH
+        uses: appleboy/ssh-action@v1.2.2
+
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT }}
+
+          script: |
+
+            set -e
+
+            cd /opt/laravel
+
+            echo "Pull latest code"
+
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "Build containers"
+
+            docker compose build --pull
+
+            echo "Start containers"
+
+            docker compose up -d
+
+            echo "Run migrations"
+
+            docker compose exec -T app \
+              php artisan migrate --force
+
+            echo "Clear Laravel cache"
+
+            docker compose exec -T app \
+              php artisan optimize:clear
+
+            echo "Cache Laravel"
+
+            docker compose exec -T app \
+              php artisan config:cache
+
+            docker compose exec -T app \
+              php artisan route:cache
+
+            docker compose exec -T app \
+              php artisan view:cache
+
+            echo "Deployment completed"
+
+            docker compose ps
