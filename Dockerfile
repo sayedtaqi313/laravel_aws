@@ -28,15 +28,25 @@ RUN composer install \
     --no-interaction \
     --prefer-dist \
     --no-dev \
-    --optimize-autoloader \
-    --no-scripts
-
+    --no-scripts \
+    --optimize-autoloader
 
 COPY . .
+
+RUN composer dump-autoload --optimize
+
+RUN mkdir -p \
+    storage/framework/cache \
+    storage/framework/sessions \
+    storage/framework/views \
+    storage/logs \
+    bootstrap/cache
 
 RUN chown -R www-data:www-data \
     storage \
     bootstrap/cache
+
+USER www-data
 
 EXPOSE 9000
 

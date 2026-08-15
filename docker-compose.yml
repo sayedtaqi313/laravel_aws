@@ -1,8 +1,6 @@
 services:
     app:
-        build:
-            context: .
-            dockerfile: Dockerfile
+        image: ghcr.io/YOUR_GITHUB_ORG/YOUR_REPO-app:${IMAGE_TAG:-latest}
 
         container_name: laravel_app
 
@@ -22,9 +20,7 @@ services:
             - laravel
 
     nginx:
-        build:
-            context: ./docker/nginx
-            dockerfile: Dockerfile
+        image: ghcr.io/YOUR_GITHUB_ORG/YOUR_REPO-nginx:${IMAGE_TAG:-latest}
 
         container_name: laravel_nginx
 
@@ -35,7 +31,6 @@ services:
 
         volumes:
             - laravel_storage:/var/www/storage:ro
-            - .:/var/www
 
         depends_on:
             - app
