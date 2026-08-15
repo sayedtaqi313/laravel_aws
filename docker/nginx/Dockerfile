@@ -7,3 +7,8 @@ COPY public /var/www/public
 RUN rm -f /var/www/public/storage \
     && mkdir -p /var/www/storage/app/public \
     && ln -s /var/www/storage/app/public /var/www/public/storage
+
+
+
+
+    

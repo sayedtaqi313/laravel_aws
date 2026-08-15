@@ -71,7 +71,8 @@ jobs:
         run: |
           docker build \
             --tag ghcr.io/sayedtaqi313/laravel_aws-nginx:latest \
-            ./docker/nginx
+            -f docker/nginx/Dockerfile \
+            .
 
       - name: Push App Image
         run: |
