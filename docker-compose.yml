@@ -35,6 +35,7 @@ services:
 
         volumes:
             - laravel_storage:/var/www/storage:ro
+            - .:/var/www
 
         depends_on:
             - app
