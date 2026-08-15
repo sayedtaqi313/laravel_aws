@@ -81,3 +81,59 @@ jobs:
       - name: Push Nginx Image
         run: |
           docker push ghcr.io/sayedtaqi313/laravel_aws-nginx:latest
+
+  deploy:
+    name: Deploy to EC2
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+
+          script: |
+            set -e
+
+            cd /opt/laravel/laravel_aws
+
+            echo "Pull latest images"
+
+            docker compose pull
+
+            echo "Start containers"
+
+            docker compose up -d
+
+            echo "Run migrations"
+
+            docker compose exec -T app \
+              php artisan migrate --force
+
+            echo "Clear Laravel cache"
+
+            docker compose exec -T app \
+              php artisan optimize:clear
+
+            echo "Cache Laravel configuration"
+
+            docker compose exec -T app \
+              php artisan config:cache
+
+            docker compose exec -T app \
+              php artisan route:cache
+
+            docker compose exec -T app \
+              php artisan view:cache
+
+            docker compose exec -T app \
+              php artisan db:seed              
+
+            echo "Deployment completed"
+
+            docker compose ps
