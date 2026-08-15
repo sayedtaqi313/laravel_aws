@@ -52,7 +52,7 @@ jobs:
 
             set -e
 
-            cd /opt/laravel
+            cd /opt/laravel/laravel_aws
 
             echo "Pull latest code"
 
