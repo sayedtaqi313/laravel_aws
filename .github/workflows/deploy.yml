@@ -120,7 +120,7 @@ jobs:
             docker compose exec -T app \
               php artisan optimize:clear
 
-            echo "Cache Laravel configuration"
+            echo "Cache Laravel"
 
             docker compose exec -T app \
               php artisan config:cache
@@ -129,7 +129,10 @@ jobs:
               php artisan route:cache
 
             docker compose exec -T app \
-              php artisan view:cache
+              php artisan view:cache --force
+
+
+            docker compose ps
 
             docker compose exec -T app \
               php artisan db:seed              
