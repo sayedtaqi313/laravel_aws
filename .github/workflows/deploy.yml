@@ -134,6 +134,5 @@ jobs:
             docker compose exec -T app \
               php artisan db:seed              
 
-            echo "Deployment completed"
 
             docker compose ps
